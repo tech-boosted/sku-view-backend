@@ -18,7 +18,9 @@ public class Users {
     
     private String lastname;
     
-    private String phone_number;
+    private String business_name;
+
+	private String phone_number;
     
     private String password;
     
@@ -26,12 +28,13 @@ public class Users {
     	
     }
 
-	public Users(int id, String email, String firstname, String lastname, String phone_number, String password) {
+	public Users(int id, String email, String firstname, String lastname, String business_name, String phone_number, String password) {
 		super();
 		this.id = id;
 		this.email = email;
 		this.firstname = firstname;
 		this.lastname = lastname;
+		this.business_name = business_name;
 		this.phone_number = phone_number;
 		this.password = password;
 	}
@@ -66,6 +69,14 @@ public class Users {
 
 	public void setLastname(String lastname) {
 		this.lastname = lastname;
+	}
+	
+	public String getBusiness_name() {
+		return business_name;
+	}
+	
+	public void setBusiness_name(String business_name) {
+		this.business_name = business_name;
 	}
 
 	public String getPhone_number() {
