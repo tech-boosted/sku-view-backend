@@ -1,7 +1,9 @@
 package com.boosted.skuview;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 public class SkuViewApplication {
@@ -10,4 +12,8 @@ public class SkuViewApplication {
 		SpringApplication.run(SkuViewApplication.class, args);
 	}
 
+	@Bean
+	public ModelMapper modelmapper() {
+		return new ModelMapper();
+	}
 }
