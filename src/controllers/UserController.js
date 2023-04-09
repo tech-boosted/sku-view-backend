@@ -7,6 +7,7 @@ const auth = require("../middleware/auth");
 const User = require('../models/User');
 
 secretKey = process.env.SECRETKEY
+tokenExpiryTime = process.env.TOKENEXPIRYTIME
 
 router.get('/allUsers', auth, (req, res) => {
     User.find()
@@ -33,7 +34,7 @@ router.post("/login", (req, res) => {
                         }
                     };
 
-                    jwt.sign(payload, secretKey, { expiresIn: 100 }, (err, token) => {
+                    jwt.sign(payload, secretKey, { expiresIn: tokenExpiryTime }, (err, token) => {
                         if (err) {
                             console.log(err)
                             console.log("jwt token failed")
@@ -81,32 +82,56 @@ router.post("/register", (req, res) => {
             const user = new User({ firstname, lastname, company, phone_number, email, password })
             bcrypt.genSalt(10, (err, salt) => {
                 bcrypt.hash(user.password, salt, (err, hash) => {
-                    if (err) throw console.log(err);
-                    user.password = hash;
-                    user.save().then(() => {
-                        const payload = {
-                            user: {
-                                id: user.id
-                            }
-                        };
+                    if (err) {
+                        console.log(err)
+                        console.log("failed to encrypt password")
+                        res.status(500);
+                        res.json({ message: 'failed' })
+                    } else {
+                        user.password = hash;
+                        user.save().then(() => {
+                            const payload = {
+                                user: {
+                                    id: user.id
+                                }
+                            };
+                            jwt.sign(payload, secretKey, { expiresIn: tokenExpiryTime }, (err, token) => {
+                                var userInfo = {
+                                    "firstname": user.firstname,
+                                    "lastname": user.lastname,
+                                    "company": user.company,
+                                    "phone_number": user.phone_number,
+                                    "email": user.email,
+                                }
+                                if (err) {
+                                    console.log(err)
+                                    console.log("jwt token failed")
+                                    res.status(500);
+                                    res.json({ message: 'token failed' })
+                                } else {
+                                    res.cookie("token", token)
+                                    res.status(200)
+                                    res.json({
+                                        userInfo
+                                    });
+                                }
+                            });
 
-                        jwt.sign(payload, secretKey, { expiresIn: 100 }, (err, token) => {
-                            if (err) {
-                                res.send(err);
-                            } else {
-                                res.cookie("token", token)
-                                res.status(200).json({
-                                    token
-                                });
-                            }
-                        });
-                    }).catch((err) => res.send(err))
+                        }).catch((err) => {
+                            console.log("Failed to create user")
+                            res.status(500);
+                            res.json({ message: "Failed to create user" })
+                        })
+                    }
                 })
             })
         }
     }).catch((err) => {
-        console.log(err);
-        res.send(err)
+        console.log(err)
+        console.log("Failed findOne")
+        res.status(500);
+        res.json({ message: 'Failed to connect to DB' })
+
     })
 })
 
