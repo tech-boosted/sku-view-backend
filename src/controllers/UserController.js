@@ -43,7 +43,7 @@ router.post("/login", (req, res) => {
                         } else {
                             res.cookie("token", token)
                             res.status(200).json({
-                                userInfo
+                                userInfo, token
                             });
                         }
                     });
@@ -112,7 +112,7 @@ router.post("/register", (req, res) => {
                                     res.cookie("token", token)
                                     res.status(200)
                                     res.json({
-                                        userInfo
+                                        userInfo, token
                                     });
                                 }
                             });
@@ -134,5 +134,19 @@ router.post("/register", (req, res) => {
 
     })
 })
+
+
+router.post("/logout", auth, (req, res) => {
+    const req_token = req.cookies.token;
+    jwt.sign(req_token, "", { expiresIn: 1 }, (logout, err) => {
+        if (logout) {
+            res.cookie("token", "")
+            res.status(200);
+            res.json({ message: "You have been Logged Out" })
+        } else {
+            res.send({ msg: "Error" });
+        }
+    });
+});
 
 module.exports = router;
