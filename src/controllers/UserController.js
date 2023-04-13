@@ -6,10 +6,13 @@ require('dotenv').config();
 const auth = require("../middleware/auth");
 const User = require('../models/User');
 
+var useCookie = auth.useCookie
+var useAuth = auth.useAuth
+
 secretKey = process.env.SECRETKEY
 tokenExpiryTime = process.env.TOKENEXPIRYTIME
 
-router.get('/allUsers', auth, (req, res) => {
+router.get('/allUsers', useCookie, (req, res) => {
     User.find()
         .then((items) => res.json(items))
 })
@@ -70,7 +73,6 @@ router.post("/login", (req, res) => {
     })
 });
 
-const salt = bcrypt.genSalt(10);
 router.post("/register", (req, res) => {
     const { body } = req;
     const { firstname, lastname, company, phone_number, email, password } = body;
@@ -136,9 +138,10 @@ router.post("/register", (req, res) => {
 })
 
 
-router.post("/logout", auth, (req, res) => {
-    const req_token = req.cookies.token;
-    jwt.sign(req_token, "", { expiresIn: 1 }, (logout, err) => {
+router.post("/logout", useAuth, (req, res) => {
+    var bearerToken = req.headers.authorization;
+    var token = bearerToken.slice(7);
+    jwt.sign(token, "", { expiresIn: 1 }, (logout, err) => {
         if (logout) {
             res.cookie("token", "")
             res.status(200);
