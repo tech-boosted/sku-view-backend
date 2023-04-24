@@ -41,8 +41,8 @@ router.post("/login", (req, res) => {
                         if (err) {
                             console.log(err)
                             console.log("jwt token failed")
-                            res.status(200);
-                            res.json({ message: 'token failed' })
+                            res.status(500);
+                            res.json({ message: 'Something went wrong' })
                         } else {
                             res.cookie("token", token)
                             res.status(200).json({
@@ -52,23 +52,23 @@ router.post("/login", (req, res) => {
                     });
                 } else {
                     res.status(401);
-                    res.send({ message: "Wrong credentials" })
+                    res.send({ message: "Invalid credentials" })
                 }
             }).catch((err) => {
                 console.log("Password compare failed")
-                res.status(200);
-                res.json({ message: 'Compare failed' })
+                res.status(500);
+                res.json({ message: 'Something went wrong' })
             })
         } else {
             console.log("Not registered")
-            res.status(200);
-            res.json({ message: 'Not Registered' })
+            res.status(401);
+            res.json({ message: 'Not Registered. Please register to continue.' })
         }
     }).catch((err) => {
         console.log(err)
-        console.log("Failed findOne")
-        res.status(200);
-        res.json({ message: 'Failed to connect to DB' })
+        console.log('Failed to connect to DB')
+        res.status(500);
+        res.json({ message: 'Something went wrong' });
 
     })
 });
@@ -78,8 +78,8 @@ router.post("/register", (req, res) => {
     const { firstname, lastname, company, phone_number, email, password } = body;
     User.findOne({ email: email }).then((user) => {
         if (user) {
-            res.status(200);
-            res.send({ message: "user already exist" })
+            res.status(409);
+            res.send({ message: "User already exists. Please login to continue" })
         } else {
             const user = new User({ firstname, lastname, company, phone_number, email, password })
             bcrypt.genSalt(10, (err, salt) => {
@@ -88,7 +88,7 @@ router.post("/register", (req, res) => {
                         console.log(err)
                         console.log("failed to encrypt password")
                         res.status(500);
-                        res.json({ message: 'failed' })
+                        res.json({ message: 'Something went wrong' });
                     } else {
                         user.password = hash;
                         user.save().then(() => {
@@ -109,7 +109,7 @@ router.post("/register", (req, res) => {
                                     console.log(err)
                                     console.log("jwt token failed")
                                     res.status(500);
-                                    res.json({ message: 'token failed' })
+                                    res.json({ message: 'Something went wrong' });
                                 } else {
                                     res.cookie("token", token)
                                     res.status(200)
@@ -130,9 +130,9 @@ router.post("/register", (req, res) => {
         }
     }).catch((err) => {
         console.log(err)
-        console.log("Failed findOne")
+        console.log('Failed to connect to DB')
         res.status(500);
-        res.json({ message: 'Failed to connect to DB' })
+        res.json({ message: 'Something went wrong' });
 
     })
 })
