@@ -27,6 +27,34 @@ router.get('/allUsers', auth, (req, res) => {
         .then((items) => res.json(items))
 })
 
+router.get('/userInfo', auth, (req, res) => {
+    User.findOne({ _id: req.user.user.id }).then((user) => {
+        if(user){
+            var credentialsObj = {
+                amazon: {
+                    connected: user.credentials.amazon.connected
+                },
+                google: {
+                    connected: user.credentials.google.connected
+                },
+                facebook: {
+                    connected: user.credentials.facebook.connected
+                }
+            }
+            var userInfo = {
+                "firstname": user.firstname,
+                "lastname": user.lastname,
+                "company": user.company,
+                "phone_number": user.phone_number,
+                "email": user.email,
+                "credentials": credentialsObj
+            }
+            res.status(200)
+            res.json(userInfo)
+        }
+    })
+})
+
 router.post("/login", (req, res) => {
     const { email, password } = req.body;
 
@@ -34,12 +62,24 @@ router.post("/login", (req, res) => {
         if (user) {
             bcrypt.compare(password, user.password).then((isMatch) => {
                 if (isMatch) {
+                    var credentialsObj = {
+                        amazon: {
+                            connected: user.credentials.amazon.connected
+                        },
+                        google: {
+                            connected: user.credentials.google.connected
+                        },
+                        facebook: {
+                            connected: user.credentials.facebook.connected
+                        }
+                    }
                     var userInfo = {
                         "firstname": user.firstname,
                         "lastname": user.lastname,
                         "company": user.company,
                         "phone_number": user.phone_number,
                         "email": user.email,
+                        "credentials": credentialsObj
                     }
                     const payload = {
                         user: {
@@ -108,12 +148,24 @@ router.post("/register", (req, res) => {
                                 }
                             };
                             jwt.sign(payload, secretKey, { expiresIn: tokenExpiryTime }, (err, token) => {
+                                var credentialsObj = {
+                                    amazon: {
+                                        connected: user.credentials.amazon.connected
+                                    },
+                                    google: {
+                                        connected: user.credentials.google.connected
+                                    },
+                                    facebook: {
+                                        connected: user.credentials.facebook.connected
+                                    }
+                                }
                                 var userInfo = {
                                     "firstname": user.firstname,
                                     "lastname": user.lastname,
                                     "company": user.company,
                                     "phone_number": user.phone_number,
                                     "email": user.email,
+                                    "credentials": credentialsObj
                                 }
                                 if (err) {
                                     console.log(err)

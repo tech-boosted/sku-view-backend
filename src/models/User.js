@@ -40,6 +40,10 @@ const UserSchema = new Schema({
                 type: String,
                 default: ''
             },
+            connected:{
+                type: Boolean,
+                default: false
+            }
         },
         google: {
             refresh_token: {
@@ -50,6 +54,10 @@ const UserSchema = new Schema({
                 type: String,
                 default: ''
             },
+            connected:{
+                type: Boolean,
+                default: false
+            }
         },
         facebook: {
             refresh_token: {
@@ -60,6 +68,10 @@ const UserSchema = new Schema({
                 type: String,
                 default: ''
             },
+            connected:{
+                type: Boolean,
+                default: false
+            }
         }
     }
 })

@@ -8,6 +8,7 @@ require('dotenv').config();
 const user_routes = require("./src/controllers/UserController");
 const data_routes = require("./src/controllers/DataController");
 const google_link_routes = require("./src/controllers/GoogleLinkController");
+const amazon_link_routes = require("./src/controllers/AmazonLinkController");
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -19,6 +20,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use('/api/user', user_routes)
 app.use('/api/data', data_routes)
 app.use('/api/link/google', google_link_routes)
+app.use('/api/link/amazon', amazon_link_routes)
 
 mongoose.connect(process.env.MONGO_URI,{
     useNewUrlParser:true,
