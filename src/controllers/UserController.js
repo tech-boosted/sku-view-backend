@@ -6,13 +6,23 @@ require('dotenv').config();
 const auth = require("../middleware/auth");
 const User = require('../models/User');
 
-var useCookie = auth.useCookie
-var useAuth = auth.useAuth
-
 secretKey = process.env.SECRETKEY
 tokenExpiryTime = process.env.TOKENEXPIRYTIME
 
-router.get('/allUsers', useCookie, (req, res) => {
+// router.get('/delete', auth, (req, res) => {
+//     User.deleteMany({}).then(()=>{res.status(200);res.json({message: "done"})})
+// })
+
+// router.get('/update', auth, (req, res) => {
+//     User.findByIdAndUpdate({ _id: "64472552f979efb62744983d" }, { credentials: { google: { access_token: "hello_token" } } })
+//     .then((res) => {
+//         console.log(res)
+//     })
+//     res.status(200);
+//     res.json({ message: "done" });
+// })
+
+router.get('/allUsers', auth, (req, res) => {
     User.find()
         .then((items) => res.json(items))
 })
@@ -138,7 +148,7 @@ router.post("/register", (req, res) => {
 })
 
 
-router.post("/logout", useAuth, (req, res) => {
+router.post("/logout", auth, (req, res) => {
     var bearerToken = req.headers.authorization;
     var token = bearerToken.slice(7);
     jwt.sign(token, "", { expiresIn: 1 }, (logout, err) => {

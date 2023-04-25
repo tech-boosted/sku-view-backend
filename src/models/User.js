@@ -27,8 +27,40 @@ const UserSchema = new Schema({
         default: ''
     },
     created_at: {
-      type: Date,
-      default: Date.now()
+        type: Date,
+        default: Date.now()
+    },
+    credentials: {
+        amazon: {
+            refresh_token: {
+                type: String,
+                default: ''
+            },
+            access_token: {
+                type: String,
+                default: ''
+            },
+        },
+        google: {
+            refresh_token: {
+                type: String,
+                default: ''
+            },
+            access_token: {
+                type: String,
+                default: ''
+            },
+        },
+        facebook: {
+            refresh_token: {
+                type: String,
+                default: ''
+            },
+            access_token: {
+                type: String,
+                default: ''
+            },
+        }
     }
 })
 

@@ -4,9 +4,7 @@ require('dotenv').config();
 const router = express.Router();
 const auth = require("../middleware/auth");
 
-var useAuth = auth.useAuth
-
-router.get('/', useAuth, (req, res) => {
+router.get('/', auth, (req, res) => {
     var data = {
         impressions: 123
     }
