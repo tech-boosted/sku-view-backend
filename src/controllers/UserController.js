@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 require('dotenv').config();
 const auth = require("../middleware/auth");
 const User = require('../models/User');
+const axios = require('axios');
 
 secretKey = process.env.SECRETKEY
 tokenExpiryTime = process.env.TOKENEXPIRYTIME
@@ -27,9 +28,21 @@ router.get('/allUsers', auth, (req, res) => {
         .then((items) => res.json(items))
 })
 
-router.get('/userInfo', auth, (req, res) => {
+router.get('/userInfo', auth, async (req, res) => {
+
+    // setTimeout(() => {
+    //     let headers = {
+    //         Authorization: `Bearer ${req.token}`
+    //     }
+    //     axios.get("http://localhost:8080/api/data", { headers: headers }).then((res) => {
+    //         console.log(res.data.data);
+    //     }).catch((err) => {
+    //         console.log(err.response.data)
+    //     })
+    // }, 5000)
+
     User.findOne({ _id: req.user.user.id }).then((user) => {
-        if(user){
+        if (user) {
             var credentialsObj = {
                 amazon: {
                     connected: user.credentials.amazon.connected

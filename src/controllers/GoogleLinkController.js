@@ -78,13 +78,11 @@ router.get('/callback', async (req, res) => {
         var refresh_token = userCredential.refresh_token;
 
         var newObj = {
-            google: {
-                access_token: access_token,
-                refresh_token: refresh_token,
-                connected: true
-            }
+            access_token: access_token,
+            refresh_token: refresh_token,
+            connected: true
         }
-        User.findByIdAndUpdate({ _id: user.user.id }, { credentials: newObj }, { new: true }).then((response) => {
+        User.findByIdAndUpdate({ _id: user.user.id }, { 'credentials.google': newObj }, { new: true }).then((response) => {
             console.log("user updated")
             res.status(301)
             res.redirect(baseUrl + "/settings/channels/google/success")
