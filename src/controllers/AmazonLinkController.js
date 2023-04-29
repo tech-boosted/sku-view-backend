@@ -6,6 +6,7 @@ const url = require('url');
 const axios = require('axios');
 const qs = require('qs');
 const router = express.Router();
+const get_access_token_from_refresh_token = require('../helper/AmazonAccessFromRefresh');
 require('dotenv').config();
 
 var secretKey = process.env.SECRETKEY;
@@ -73,6 +74,50 @@ router.get('/callback', async (req, res) => {
             res.json({ message: error.response.data.error_description })
         });
     }
+})
+
+router.get('/profile', auth, async (req, res) => {
+
+    var access_token = '';
+    var refresh_token = '';
+    await User.findOne({ _id: req.user.user.id }).then((user) => {
+        if (user) {
+            access_token = user.credentials.amazon.access_token;
+            refresh_token = user.credentials.amazon.refresh_token;
+            var headers = {
+                'Amazon-Advertising-API-ClientId': AMAZON_CLIENT_ID,
+                'Authorization': 'Bearer ' + access_token
+            }
+            axios.get('https://advertising-api.amazon.com/v2/profiles', { headers: headers }).then((res) => {
+                res.status(200)
+                res.json({ message: "Got profiles" })
+            }).catch(async (err) => {
+                console.log("profile failure")
+                if (err.response.status == 401) { // access_token expired
+                    console.log("profile failure 401")
+                    var result = await get_access_token_from_refresh_token(refresh_token);
+                    var new_access_token = '';
+                    if (result['status']) {
+                        new_access_token = result['value'];
+                        console.log("new_access_token: ", new_access_token);
+                        res.status(200)
+                        res.json({ message: "Try Again" })
+                        return;
+                    }
+                    res.status(500);
+                    res.json({ message: "Something went wrong" });
+                    return;
+                }
+                res.status(500);
+                res.json({ message: "Something went wrong" });
+                return;
+            })
+        }
+    }).catch((err) => {
+        console.log("User not found");
+        res.status(500)
+        res.json({ message: "User not found" })
+    })
 })
 
 module.exports = router;
