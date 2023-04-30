@@ -7,6 +7,7 @@ const axios = require('axios');
 const qs = require('qs');
 const router = express.Router();
 const get_access_token_from_refresh_token = require('../helper/AmazonAccessFromRefresh');
+const get_amazon_profiles = require('../helper/AmazonProfiles');
 require('dotenv').config();
 
 var secretKey = process.env.SECRETKEY;
@@ -76,48 +77,111 @@ router.get('/callback', async (req, res) => {
     }
 })
 
-router.get('/profile', auth, async (req, res) => {
+router.get('/listProfiles', auth, async (req, response) => {
 
     var access_token = '';
     var refresh_token = '';
-    await User.findOne({ _id: req.user.user.id }).then((user) => {
-        if (user) {
-            access_token = user.credentials.amazon.access_token;
-            refresh_token = user.credentials.amazon.refresh_token;
-            var headers = {
-                'Amazon-Advertising-API-ClientId': AMAZON_CLIENT_ID,
-                'Authorization': 'Bearer ' + access_token
-            }
-            axios.get('https://advertising-api.amazon.com/v2/profiles', { headers: headers }).then((res) => {
-                res.status(200)
-                res.json({ message: "Got profiles" })
-            }).catch(async (err) => {
-                console.log("profile failure")
-                if (err.response.status == 401) { // access_token expired
-                    console.log("profile failure 401")
-                    var result = await get_access_token_from_refresh_token(refresh_token);
-                    var new_access_token = '';
-                    if (result['status']) {
-                        new_access_token = result['value'];
-                        console.log("new_access_token: ", new_access_token);
-                        res.status(200)
-                        res.json({ message: "Try Again" })
-                        return;
-                    }
-                    res.status(500);
-                    res.json({ message: "Something went wrong" });
+    console.log(12)
+    // Get access and refresh token from DB
+    await User.findOne({ _id: req.user.user.id }).then(async (user) => {
+        console.log(34)
+        access_token = user.credentials.amazon.access_token;
+        refresh_token = user.credentials.amazon.refresh_token;
+
+        // Get amazon profiles associated to access token
+        let profiles_result = await get_amazon_profiles(access_token);
+        console.log(56)
+        if (profiles_result['status']) {
+            console.log(78)
+            // Return profiles
+            response.status(200)
+            response.json({ message: "success", data: profiles_result['value'] })
+            return;
+        } else {
+            console.log(91)
+            if (profiles_result['value'] == 401) {
+                console.log(11)
+                // Access token expired
+                // Get new access token
+                var new_access_token_result = await get_access_token_from_refresh_token(refresh_token);
+                console.log(12)
+                if (new_access_token_result['status']) {
+                    console.log(13)
+                    var new_access_token = new_access_token_result['value'];
+                    // Testing
+                    new_access_token = "Atza|IwEBIOsDczDNRbB7N8MvGBNOSNbBE1bR7QTDZgR2P14-sdpRFx6x6ex_njlTeh0swyBa0CCZXadhCVXv8-HWecJUeA8jsgOXOqzr8YXrfofKVT88L6xB-pXYzGjcBJpsSNdqo4cHSLkDkMGaTiwiuhkHRt1UvLLI0QMEucon6-2nrKqgSrHaPPnWhDMKntqBvepSCPjOyliamq4fkc3CP_4W2-_LR0TEW7zfvhIl9t4l-1AMzKt7o0YOlwXwvdXlP1ioYVqhICnDoc3EWAxZJhvm_VCeVx7_JSjvOwMHhihrPEOy00EihpuFgLyOubjA_kP1t-WeOd6JA8kMnvwM5v03UsCykLdWsOyfTcF4Y1XGhLxt_7FZ_1xyhyXlH-BNqcn1gFA4FrqVZEEMB8egQcbEbuNIxssO7LSiYZTWsjj2LBIYR3n2rRPjX0m2PATUoYxjlZz_6JI3R5zjSs7CZVU2VSv1Uq3fFECL78wty4xq56_2MA";
+                    // console.log("new_access_token: ", new_access_token);
+
+                    // Update the user's access token in the DB
+                    await User.findByIdAndUpdate({ _id: req.user.user.id }, { 'credentials.amazon.access_token': new_access_token }, { new: true })
+                        .then(async (res) => {
+                            console.log(14)
+                            console.log("user updated with new access token");
+                            // Get profiles using new access token
+                            let profiles_result_with_new_access_token = await get_amazon_profiles(new_access_token);
+                            console.log(15)
+
+                            if (profiles_result_with_new_access_token['status']) {
+                                console.log(16)
+                                // Return profiles
+                                console.log("Got profiles")
+                                response.status(200);
+                                response.json({ message: "success", data: profiles_result_with_new_access_token['value'] });
+                                return;
+                            } else {
+                                console.log(17)
+                                // Failed to get profiles using new access token
+                                response.status(500);
+                                response.json({ message: profiles_result_with_new_access_token['value'] });
+                                return;
+                            }
+                        }).catch((err) => {
+                            console.log(err)
+                            response.status(500)
+                            response.json({ message: "Something went wrong, try again" })
+                            return;
+                        })
+                } else {
+                    // New access token fetch failed
+                    console.log(new_access_token_result['value']);
+                    response.status(500)
+                    response.json({ message: new_access_token_result['value'] })
                     return;
                 }
-                res.status(500);
-                res.json({ message: "Something went wrong" });
+            } else {
+                console.log("Failed to fetch profiles " + err);
+                // unknown error
+                response.status(500)
+                response.json({ message: profiles_result['value'] })
                 return;
-            })
+            }
         }
     }).catch((err) => {
-        console.log("User not found");
-        res.status(500)
-        res.json({ message: "User not found" })
+        console.log("User not found " + err);
+        response.status(500)
+        response.json({ message: "User not found " + err })
+        return;
     })
+});
+
+router.post('/setProfile', auth, async (request, response) => {
+
+    const { profile_id } = request.body;
+    if(profile_id){
+        await User.findByIdAndUpdate({ _id: request.user.user.id }, { 'credentials.amazon.profile_id': profile_id }, { new: true })
+        .then((res)=>{
+            response.status(200)
+            response.json({ message: "Profile ID updated" })
+        })
+        .catch((err)=>{
+            response.status(500)
+            response.json({ message: "Could not update profile ID" })
+        })
+    }else{
+        response.status(500)
+        response.json({ message: "Invalid Profile ID" })
+    }
 })
+
 
 module.exports = router;

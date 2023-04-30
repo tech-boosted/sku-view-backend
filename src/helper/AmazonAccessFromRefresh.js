@@ -9,6 +9,7 @@ AMAZON_REDIRECT_URL = process.env.AMAZON_REDIRECT_URL;
 
 
 const get_access_token_from_refresh_token = async (refresh_token) => {
+  console.log('po')
   var result;
   console.log("getting access token from refresh token")
   let data = qs.stringify({
@@ -24,11 +25,12 @@ const get_access_token_from_refresh_token = async (refresh_token) => {
 
   await axios.post('https://api.amazon.com/auth/o2/token', data, { headers: headers })
     .then((response) => {
+      console.log('iu')
       console.log("Got access token from refresh token")
-      console.log("Access token refresh success");
       result = {status: true, value: response.data.access_token};
     })
     .catch((error) => {
+      console.log('yt')
       console.log("failed access token from refresh token")
       console.log(error.response.data.error_description);
       result = {status: false, value: error.response.data.error_description};

@@ -43,6 +43,14 @@ const UserSchema = new Schema({
             connected:{
                 type: Boolean,
                 default: false
+            },
+            status:{
+                type: Boolean,
+                default: false
+            },
+            profile_id:{
+                type: String,
+                default: ''
             }
         },
         google: {
@@ -57,6 +65,14 @@ const UserSchema = new Schema({
             connected:{
                 type: Boolean,
                 default: false
+            },
+            status:{
+                type: Boolean,
+                default: false
+            },
+            profile_id:{
+                type: String,
+                default: ''
             }
         },
         facebook: {
@@ -71,6 +87,14 @@ const UserSchema = new Schema({
             connected:{
                 type: Boolean,
                 default: false
+            },
+            status:{
+                type: Boolean,
+                default: false
+            },
+            profile_id:{
+                type: String,
+                default: ''
             }
         }
     }
