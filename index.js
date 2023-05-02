@@ -12,6 +12,7 @@ const user_routes = require("./src/controllers/UserController");
 const data_routes = require("./src/controllers/DataController");
 const google_link_routes = require("./src/controllers/GoogleLinkController");
 const amazon_link_routes = require("./src/controllers/AmazonLinkController");
+const amazon_report_routes = require("./src/controllers/AmazonReportGenerator");
 
 const PORT = process.env.PORT || 3001;
 const ENV = process.env.ENV;
@@ -28,6 +29,7 @@ app.use('/api/user', user_routes)
 app.use('/api/data', data_routes)
 app.use('/api/link/google', google_link_routes)
 app.use('/api/link/amazon', amazon_link_routes)
+app.use('/api/report/amazon', amazon_report_routes)
 
 mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
