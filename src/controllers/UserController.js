@@ -45,13 +45,16 @@ router.get('/userInfo', auth, async (req, res) => {
         if (user) {
             var credentialsObj = {
                 amazon: {
-                    connected: user.credentials.amazon.connected
+                    connected: user.credentials.amazon.connected,
+                    profile_id: user.credentials.amazon.profile_id
                 },
                 google: {
-                    connected: user.credentials.google.connected
+                    connected: user.credentials.google.connected,
+                    profile_id: user.credentials.google.profile_id
                 },
                 facebook: {
-                    connected: user.credentials.facebook.connected
+                    connected: user.credentials.facebook.connected,
+                    profile_id: user.credentials.facebook.profile_id
                 }
             }
             var userInfo = {
