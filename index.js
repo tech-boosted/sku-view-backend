@@ -31,6 +31,11 @@ app.use('/api/link/google', google_link_routes)
 app.use('/api/link/amazon', amazon_link_routes)
 app.use('/api/report/amazon', amazon_report_routes)
 
+app.use(express.static('/home/ubuntu/acros_tool'));
+app.get('*', (req,res) =>{
+    res.sendFile('/home/ubuntu/acros_tool/index.html');
+});
+
 mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
@@ -43,18 +48,18 @@ if (ENV == "dev") {
 } else {
     // Listen both http & https ports
     const httpServer = http.createServer(app);
-    const httpsServer = https.createServer({
-        key: fs.readFileSync(SSL_KEY_PATH),
-        cert: fs.readFileSync(SSL_CERT_PATH),
-    }, app);
+    // const httpsServer = https.createServer({
+    //     key: fs.readFileSync(SSL_KEY_PATH),
+    //     cert: fs.readFileSync(SSL_CERT_PATH),
+    // }, app);
 
-    // httpServer.listen(PORT, () => {
-    //     console.log('HTTP Server running on port 80');
-    // });
-
-    httpsServer.listen(PORT, () => {
-        console.log('HTTPS Server running on port 443');
+    httpServer.listen(PORT, () => {
+        console.log('HTTP Server running on port ', PORT);
     });
+
+    // httpsServer.listen(PORT, () => {
+    //     console.log('HTTPS Server running on port 443');
+    // });
 
 }
 
